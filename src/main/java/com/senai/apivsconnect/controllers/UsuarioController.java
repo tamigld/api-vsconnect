@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -62,6 +63,11 @@ public class UsuarioController {
         }
         usuario.setUrl_img(urlImagem);
 
+        String senhaCriptografada = new BCryptPasswordEncoder().encode(usuarioDto.senha());
+        // criptografia da senha do usuário
+        usuario.setSenha(senhaCriptografada);
+        // transforma a senha do usuário na senha criptografada
+
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRepository.save(usuario));
     }
 
@@ -85,6 +91,11 @@ public class UsuarioController {
             throw new RuntimeException(exception);
         }
         usuario.setUrl_img(urlImagem);
+
+        String senhaCriptografada = new BCryptPasswordEncoder().encode(usuarioDto.senha());
+        // criptografia da senha do usuário
+        usuario.setSenha(senhaCriptografada);
+        // transforma a senha do usuário na senha criptografada
 
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRepository.save(usuario));
     }
