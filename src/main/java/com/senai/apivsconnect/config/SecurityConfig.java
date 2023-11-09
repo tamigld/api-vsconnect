@@ -1,5 +1,6 @@
 package com.senai.apivsconnect.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,37 +12,36 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-// configurações de segurança, como permissões
 public class SecurityConfig {
+    @Autowired
+    SecurityFilter securityFilter;
+
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         return httpSecurity
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // informações de sessões pelo token (cliente)
-                .authorizeHttpRequests(authorize -> authorize
-                    // aqui terá cada restrição e permissão dos endpoint das requisições
-                        .anyRequest().permitAll()
-                        // qualquer requisição permitida
-                        .requestMatchers(HttpMethod.POST, "/servicos").hasRole("CLIENTE")
-                        // permite que para fazer POST no ednpoint servicos, somente quem é CLIENTE
-
-                ).build();
-                // aplicar as alterações
-
+                .authorizeHttpRequests(authorize ->  authorize
+//                        .requestMatchers(HttpMethod.POST, "servicos").hasRole("CLIENTE")
+                                .anyRequest().permitAll()
+                )
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception{
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
-    PasswordEncoder passwordEncoder(){
-        // retorna a criptografia que será utilizada na senha
+    PasswordEncoder passwordEncoder (){
         return new BCryptPasswordEncoder();
     }
 }
